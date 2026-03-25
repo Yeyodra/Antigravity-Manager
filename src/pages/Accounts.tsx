@@ -1,17 +1,17 @@
 
 
 import {
-  Download,
-  LayoutGrid,
-  List,
-  RefreshCw,
   Search,
-  Sparkles,
+  RefreshCw,
+  Trash2,
+  Plus,
+  Download,
+  Upload,
+  LayoutGrid,
+  LayoutList,
+  Flame,
   ToggleLeft,
   ToggleRight,
-  Trash2,
-  Upload,
-  Users,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AccountDetailsDialog from "../components/accounts/AccountDetailsDialog";
@@ -32,7 +32,6 @@ import { cn } from "../utils/cn";
 import { isTauri } from "../utils/env";
 import { request as invoke } from "../utils/request";
 import { useTranslation } from "react-i18next";
-import FamilyManageDialog from "../components/accounts/FamilyManageDialog";
 
 type FilterType = "all" | "pro" | "ultra" | "free" | `family:${string}`;
 type ViewMode = "list" | "grid";
@@ -228,7 +227,6 @@ function Accounts() {
   }, [localPageSize, config?.accounts_page_size, containerSize, viewMode]);
 
   const { families, fetchFamilies } = useFamilyStore();
-  const [showFamilyManageDialog, setShowFamilyManageDialog] = useState(false);
 
   useEffect(() => {
     fetchAccounts();
@@ -960,15 +958,6 @@ function Accounts() {
           </div>
         )}
 
-        {/* Manage families button */}
-        <button
-          className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-base-200 transition-colors shrink-0"
-          onClick={() => setShowFamilyManageDialog(true)}
-          title={t('accounts.family.manage_families')}
-        >
-          <Users className="w-4 h-4" />
-        </button>
-
         <div className="flex-1 min-w-[8px]"></div>
 
         {/* 操作按钮组 */}
@@ -1292,12 +1281,6 @@ function Accounts() {
       <AccountErrorDialog
         account={accounts.find(a => a.id === errorAccountId) || null}
         onClose={() => setErrorAccountId(null)}
-      />
-
-      {/* Family管理弹窗 */}
-      <FamilyManageDialog
-        isOpen={showFamilyManageDialog}
-        onClose={() => setShowFamilyManageDialog(false)}
       />
     </div>
   );

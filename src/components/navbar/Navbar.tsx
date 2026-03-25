@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Network, Activity, BarChart3, Settings, Lock } from 'lucide-react';
+import { LayoutDashboard, Users, UsersRound, Network, Activity, BarChart3, Settings, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useConfigStore } from '../../stores/useConfigStore';
 import { isTauri, isLinux } from '../../utils/env';
@@ -21,6 +21,7 @@ function Navbar() {
     const navItems: NavItem[] = [
         { path: '/', label: t('nav.dashboard'), icon: LayoutDashboard, priority: 'high' },
         { path: '/accounts', label: t('nav.accounts'), icon: Users, priority: 'high' },
+        { path: '/families', label: t('nav.families', 'Families'), icon: UsersRound, priority: 'high' },
         { path: '/api-proxy', label: t('nav.proxy'), icon: Network, priority: 'high' },
         { path: '/monitor', label: t('nav.call_records'), icon: Activity, priority: 'medium' },
         { path: '/token-stats', label: t('nav.token_stats', 'Token 统计'), icon: BarChart3, priority: 'low' },

@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
 import Accounts from './pages/Accounts';
+import Families from './pages/Families';
 import Settings from './pages/Settings';
 import ApiProxy from './pages/ApiProxy';
 import Monitor from './pages/Monitor';
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
       {
         path: 'accounts',
         element: <Accounts />,
+      },
+      {
+        path: 'families',
+        element: <Families />,
       },
       {
         path: 'api-proxy',
