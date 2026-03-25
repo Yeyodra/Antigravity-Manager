@@ -3,6 +3,7 @@ import { Account } from '../../types/account';
 import { getQuotaColor, formatTimeRemaining, getTimeRemainingColor } from '../../utils/format';
 import { cn } from '../../utils/cn';
 import { useTranslation } from 'react-i18next';
+import FamilyBadge from './FamilyBadge';
 
 interface AccountRowProps {
     account: Account;
@@ -154,6 +155,9 @@ function AccountRow({ account, selected, onSelect, isCurrent, isRefreshing, isSw
                                 );
                             }
                         })()}
+
+                        {/* Family badge */}
+                        <FamilyBadge familyId={account.family_id} />
                     </div>
                 </div>
             </td>

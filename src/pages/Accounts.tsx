@@ -11,6 +11,7 @@ import {
   ToggleRight,
   Trash2,
   Upload,
+  Users,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AccountDetailsDialog from "../components/accounts/AccountDetailsDialog";
@@ -25,13 +26,15 @@ import { showToast } from "../components/common/ToastContainer";
 import { exportAccounts } from "../services/accountService";
 import { useAccountStore } from "../stores/useAccountStore";
 import { useConfigStore } from "../stores/useConfigStore";
+import { useFamilyStore } from "../stores/useFamilyStore";
 import { Account } from "../types/account";
 import { cn } from "../utils/cn";
 import { isTauri } from "../utils/env";
 import { request as invoke } from "../utils/request";
 import { useTranslation } from "react-i18next";
+import FamilyManageDialog from "../components/accounts/FamilyManageDialog";
 
-type FilterType = "all" | "pro" | "ultra" | "free";
+type FilterType = "all" | "pro" | "ultra" | "free" | `family:${string}`;
 type ViewMode = "list" | "grid";
 
 
@@ -224,8 +227,12 @@ function Accounts() {
     }
   }, [localPageSize, config?.accounts_page_size, containerSize, viewMode]);
 
+  const { families, fetchFamilies } = useFamilyStore();
+  const [showFamilyManageDialog, setShowFamilyManageDialog] = useState(false);
+
   useEffect(() => {
     fetchAccounts();
+    fetchFamilies();
   }, []);
 
   // Reset pagination when view mode changes to avoid empty pages or confusion
@@ -242,6 +249,12 @@ function Accounts() {
 
   // 计算各筛选状态下的数量 (基于搜索结果)
   const filterCounts = useMemo(() => {
+    const familyCounts: Record<string, number> = {};
+    for (const family of families) {
+      familyCounts[family.id] = searchedAccounts.filter(
+        (a) => a.family_id === family.id,
+      ).length;
+    }
     return {
       all: searchedAccounts.length,
       pro: searchedAccounts.filter((a) =>
@@ -254,8 +267,9 @@ function Accounts() {
         const tier = a.quota?.subscription_tier?.toLowerCase();
         return tier && !tier.includes("pro") && !tier.includes("ultra");
       }).length,
+      families: familyCounts,
     };
-  }, [searchedAccounts]);
+  }, [searchedAccounts, families]);
 
   // 过滤和搜索最终结果
   const filteredAccounts = useMemo(() => {
@@ -274,6 +288,9 @@ function Accounts() {
         const tier = a.quota?.subscription_tier?.toLowerCase();
         return tier && !tier.includes("pro") && !tier.includes("ultra");
       });
+    } else if (filter.startsWith("family:")) {
+      const familyId = filter.slice(7);
+      result = result.filter((a) => a.family_id === familyId);
     }
 
     return result;
@@ -910,6 +927,48 @@ function Accounts() {
           </button>
         </div>
 
+        {/* Family filter tabs */}
+        {families.length > 0 && (
+          <div className="flex gap-0.5 bg-gray-100/80 dark:bg-base-200 p-1 rounded-xl border border-gray-200/50 dark:border-white/5 shrink-0">
+            {families.map((family) => (
+              <button
+                key={family.id}
+                className={cn(
+                  "px-2 md:px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1 md:gap-1.5 whitespace-nowrap shrink-0",
+                  filter === `family:${family.id}`
+                    ? "bg-white dark:bg-base-100 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-black/5"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-base-content hover:bg-white/40"
+                )}
+                onClick={() => setFilter(`family:${family.id}`)}
+                title={`${family.name} (${filterCounts.families[family.id] || 0})`}
+              >
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: family.color }}
+                />
+                <span className="hidden md:inline max-w-[80px] truncate">{family.name}</span>
+                <span className={cn(
+                  "px-1.5 py-0.5 rounded-md text-[10px] font-bold transition-colors",
+                  filter === `family:${family.id}`
+                    ? "bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400"
+                    : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+                )}>
+                  {filterCounts.families[family.id] || 0}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Manage families button */}
+        <button
+          className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-base-200 transition-colors shrink-0"
+          onClick={() => setShowFamilyManageDialog(true)}
+          title="Manage Families"
+        >
+          <Users className="w-4 h-4" />
+        </button>
+
         <div className="flex-1 min-w-[8px]"></div>
 
         {/* 操作按钮组 */}
@@ -1233,6 +1292,12 @@ function Accounts() {
       <AccountErrorDialog
         account={accounts.find(a => a.id === errorAccountId) || null}
         onClose={() => setErrorAccountId(null)}
+      />
+
+      {/* Family管理弹窗 */}
+      <FamilyManageDialog
+        isOpen={showFamilyManageDialog}
+        onClose={() => setShowFamilyManageDialog(false)}
       />
     </div>
   );
