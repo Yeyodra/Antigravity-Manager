@@ -141,21 +141,27 @@ pub fn update_family(
 ) -> Result<Family, String> {
     let mut index = load_families()?;
 
-    let family = index
+    // Check family exists
+    let family_pos = index
         .families
-        .iter_mut()
-        .find(|f| f.id == id)
+        .iter()
+        .position(|f| f.id == id)
         .ok_or_else(|| format!("family_not_found: {}", id))?;
 
-    if let Some(new_name) = name {
-        // Check for duplicate name (excluding self)
+    // Check for duplicate name (excluding self) before mutating
+    if let Some(ref new_name) = name {
         if index
             .families
             .iter()
-            .any(|f| f.id != id && f.name.eq_ignore_ascii_case(&new_name))
+            .any(|f| f.id != id && f.name.eq_ignore_ascii_case(new_name))
         {
             return Err(format!("family_name_already_exists: {}", new_name));
         }
+    }
+
+    // Now safe to mutate
+    let family = &mut index.families[family_pos];
+    if let Some(new_name) = name {
         family.name = new_name;
     }
     if let Some(new_color) = color {
