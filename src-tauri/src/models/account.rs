@@ -1,6 +1,6 @@
+use super::{quota::QuotaData, token::TokenData};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
-use super::{token::TokenData, quota::QuotaData};
 
 /// 账号数据结构
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -60,6 +60,9 @@ pub struct Account {
     /// 用户自定义标签
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub custom_label: Option<String>,
+    /// Family group assignment
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub family_id: Option<String>,
 }
 
 impl Account {
@@ -89,6 +92,7 @@ impl Account {
             proxy_id: None,
             proxy_bound_at: None,
             custom_label: None,
+            family_id: None,
         }
     }
 

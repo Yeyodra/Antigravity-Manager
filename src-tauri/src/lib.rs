@@ -582,6 +582,13 @@ pub fn run() {
             commands::user_token::renew_user_token,
             commands::user_token::get_token_ip_bindings,
             commands::user_token::get_user_token_summary,
+            // Family group commands
+            commands::family::list_families,
+            commands::family::create_family,
+            commands::family::update_family,
+            commands::family::delete_family,
+            commands::family::assign_account_family,
+            commands::family::batch_assign_account_family,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

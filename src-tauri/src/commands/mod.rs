@@ -15,6 +15,7 @@ pub mod security;
 pub mod proxy_pool;
 // 导出 user_token 命令
 pub mod user_token;
+pub mod family;
 
 /// 列出所有账号
 #[tauri::command]

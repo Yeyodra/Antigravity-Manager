@@ -159,6 +159,14 @@ const COMMAND_MAPPING: Record<string, { url: string; method: 'GET' | 'POST' | 'D
   'bind_account_proxy': { url: '/api/proxy/pool/bind', method: 'POST' },
   'unbind_account_proxy': { url: '/api/proxy/pool/unbind', method: 'POST' },
   'get_account_proxy_binding': { url: '/api/proxy/pool/binding/:accountId', method: 'GET' },
+
+  // Family Groups
+  'list_families': { url: '/api/families', method: 'GET' },
+  'create_family': { url: '/api/families', method: 'POST' },
+  'update_family': { url: '/api/families/:id', method: 'PATCH' },
+  'delete_family': { url: '/api/families/:id', method: 'DELETE' },
+  'assign_account_family': { url: '/api/families/assign', method: 'POST' },
+  'batch_assign_account_family': { url: '/api/families/batch-assign', method: 'POST' },
 };
 
 export async function request<T>(cmd: string, args?: any): Promise<T> {

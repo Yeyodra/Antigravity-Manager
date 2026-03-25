@@ -1,10 +1,14 @@
 pub mod account;
-pub mod token;
-pub mod quota;
 pub mod config;
+pub mod family;
+pub mod quota;
+pub mod token;
 
-pub use account::{Account, AccountIndex, AccountSummary, DeviceProfile, DeviceProfileVersion, AccountExportItem, AccountExportResponse};
-pub use token::TokenData;
+pub use account::{
+    Account, AccountExportItem, AccountExportResponse, AccountIndex, AccountSummary, DeviceProfile,
+    DeviceProfileVersion,
+};
+pub use config::{AppConfig, CircuitBreakerConfig, QuotaProtectionConfig};
+pub use family::{Family, FamilyIndex};
 pub use quota::QuotaData;
-pub use config::{AppConfig, QuotaProtectionConfig, CircuitBreakerConfig};
-
+pub use token::TokenData;
