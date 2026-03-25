@@ -964,7 +964,7 @@ function Accounts() {
         <button
           className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-base-200 transition-colors shrink-0"
           onClick={() => setShowFamilyManageDialog(true)}
-          title="Manage Families"
+          title={t('accounts.family.manage_families')}
         >
           <Users className="w-4 h-4" />
         </button>

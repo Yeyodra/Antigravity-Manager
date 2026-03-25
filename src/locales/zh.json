@@ -330,6 +330,28 @@
             "warmup_all_msg": "确定要立即为所有符合条件的账号触发预热任务吗？这将向 Google 服务发送极小流量以重置配额配额周期。",
             "batch_warmup_title": "批量手动预热",
             "batch_warmup_msg": "确定要为选中的 {{count}} 个账号立即触发预热吗？"
+        },
+        "family": {
+            "manage_families": "管理家庭组",
+            "create_family": "创建家庭组",
+            "edit_family": "编辑家庭组",
+            "no_families": "暂无家庭组，创建一个来组织您的账号。",
+            "name": "名称",
+            "name_placeholder": "例如：工作、个人...",
+            "color": "颜色",
+            "description": "描述（可选）",
+            "description_placeholder": "简短描述...",
+            "close": "关闭",
+            "back": "返回",
+            "create": "创建",
+            "save": "保存",
+            "saving": "保存中...",
+            "confirm_delete": "确认",
+            "cancel_delete": "取消",
+            "assign_family": "分配家庭组",
+            "family_label": "家庭组",
+            "unassign": "取消分配",
+            "no_families_short": "暂无家庭组"
         }
     },
     "settings": {

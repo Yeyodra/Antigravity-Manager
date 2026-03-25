@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Users, ChevronDown, X } from 'lucide-react';
 import { useFamilyStore } from '../../stores/useFamilyStore';
 import { cn } from '../../utils/cn';
+import { useTranslation } from 'react-i18next';
 
 interface FamilyAssignMenuProps {
     accountId: string;
@@ -10,6 +11,7 @@ interface FamilyAssignMenuProps {
 }
 
 function FamilyAssignMenu({ accountId, currentFamilyId, onAssigned }: FamilyAssignMenuProps) {
+    const { t } = useTranslation();
     const { families, assignAccountFamily } = useFamilyStore();
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -58,10 +60,10 @@ function FamilyAssignMenu({ accountId, currentFamilyId, onAssigned }: FamilyAssi
                     borderColor: `${currentFamily.color}30`,
                     color: currentFamily.color,
                 } : undefined}
-                title="Assign family"
+                title={t('accounts.family.assign_family')}
             >
                 <Users className="w-2.5 h-2.5" />
-                {currentFamily ? currentFamily.name : 'Family'}
+                {currentFamily ? currentFamily.name : t('accounts.family.family_label')}
                 <ChevronDown className="w-2 h-2" />
             </button>
 
@@ -73,7 +75,7 @@ function FamilyAssignMenu({ accountId, currentFamilyId, onAssigned }: FamilyAssi
                             className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                         >
                             <X className="w-3 h-3" />
-                            Unassign
+                            {t('accounts.family.unassign')}
                         </button>
                     )}
                     {families.map((family) => (
@@ -92,7 +94,7 @@ function FamilyAssignMenu({ accountId, currentFamilyId, onAssigned }: FamilyAssi
                         </button>
                     ))}
                     {families.length === 0 && (
-                        <p className="px-3 py-2 text-xs text-gray-400">No families created</p>
+                        <p className="px-3 py-2 text-xs text-gray-400">{t('accounts.family.no_families_short')}</p>
                     )}
                 </div>
             )}

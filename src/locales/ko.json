@@ -304,6 +304,28 @@
             "warmup_all_msg": "모든 대상 계정에 대해 즉시 웜업 작업을 트리거하시겠습니까? 할당량 주기를 재설정하기 위해 Google 서비스에 최소한의 트래픽을 보냅니다.",
             "batch_warmup_title": "일괄 수동 웜업",
             "batch_warmup_msg": "선택한 {{count}}개 계정에 대해 즉시 웜업을 트리거하시겠습니까?"
+        },
+        "family": {
+            "manage_families": "패밀리 관리",
+            "create_family": "패밀리 생성",
+            "edit_family": "패밀리 편집",
+            "no_families": "아직 패밀리가 없습니다. 계정을 정리하려면 하나를 만드세요.",
+            "name": "이름",
+            "name_placeholder": "예: 업무, 개인...",
+            "color": "색상",
+            "description": "설명 (선택사항)",
+            "description_placeholder": "간단한 설명...",
+            "close": "닫기",
+            "back": "뒤로",
+            "create": "생성",
+            "save": "저장",
+            "saving": "저장 중...",
+            "confirm_delete": "확인",
+            "cancel_delete": "취소",
+            "assign_family": "패밀리 지정",
+            "family_label": "패밀리",
+            "unassign": "지정 해제",
+            "no_families_short": "생성된 패밀리 없음"
         }
     },
     "settings": {

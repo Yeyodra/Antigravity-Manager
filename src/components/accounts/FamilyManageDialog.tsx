@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
 import { useFamilyStore } from '../../stores/useFamilyStore';
 import { cn } from '../../utils/cn';
+import { useTranslation } from 'react-i18next';
 
 const PRESET_COLORS = [
     '#3B82F6', '#8B5CF6', '#EC4899', '#EF4444',
@@ -14,6 +15,7 @@ interface FamilyManageDialogProps {
 }
 
 function FamilyManageDialog({ isOpen, onClose }: FamilyManageDialogProps) {
+    const { t } = useTranslation();
     const { families, createFamily, updateFamily, deleteFamily } = useFamilyStore();
     const [mode, setMode] = useState<'list' | 'create' | 'edit'>('list');
     const [editId, setEditId] = useState<string | null>(null);
@@ -90,7 +92,7 @@ function FamilyManageDialog({ isOpen, onClose }: FamilyManageDialogProps) {
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-base-300">
                     <h2 className="text-lg font-bold text-gray-900 dark:text-base-content">
-                        {mode === 'create' ? 'Create Family' : mode === 'edit' ? 'Edit Family' : 'Manage Families'}
+                        {mode === 'create' ? t('accounts.family.create_family') : mode === 'edit' ? t('accounts.family.edit_family') : t('accounts.family.manage_families')}
                     </h2>
                     <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-base-200 transition-colors">
                         <X className="w-5 h-5 text-gray-500" />
@@ -103,7 +105,7 @@ function FamilyManageDialog({ isOpen, onClose }: FamilyManageDialogProps) {
                         <div className="space-y-2">
                             {families.length === 0 ? (
                                 <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">
-                                    No families yet. Create one to organize your accounts.
+                                    {t('accounts.family.no_families')}
                                 </p>
                             ) : (
                                 families.map((family) => (
@@ -132,13 +134,13 @@ function FamilyManageDialog({ isOpen, onClose }: FamilyManageDialogProps) {
                                                         disabled={loading}
                                                         className="px-2 py-1 text-[10px] font-bold text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors"
                                                     >
-                                                        Confirm
+                                                        {t('accounts.family.confirm_delete')}
                                                     </button>
                                                     <button
                                                         onClick={() => setConfirmDeleteId(null)}
                                                         className="px-2 py-1 text-[10px] font-bold text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-base-300 rounded-md hover:bg-gray-300 dark:hover:bg-base-200 transition-colors"
                                                     >
-                                                        Cancel
+                                                        {t('accounts.family.cancel_delete')}
                                                     </button>
                                                 </div>
                                             ) : (
@@ -158,12 +160,12 @@ function FamilyManageDialog({ isOpen, onClose }: FamilyManageDialogProps) {
                         /* Create / Edit form */
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Name</label>
+                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{t('accounts.family.name')}</label>
                                 <input
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    placeholder="e.g. Work, Personal..."
+                                    placeholder={t('accounts.family.name_placeholder')}
                                     className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-base-300 bg-white dark:bg-base-200 text-gray-900 dark:text-base-content focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                                     maxLength={30}
                                     autoFocus
@@ -171,7 +173,7 @@ function FamilyManageDialog({ isOpen, onClose }: FamilyManageDialogProps) {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Color</label>
+                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{t('accounts.family.color')}</label>
                                 <div className="flex gap-2 flex-wrap">
                                     {PRESET_COLORS.map((c) => (
                                         <button
@@ -188,12 +190,12 @@ function FamilyManageDialog({ isOpen, onClose }: FamilyManageDialogProps) {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Description (optional)</label>
+                                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{t('accounts.family.description')}</label>
                                 <input
                                     type="text"
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="Short description..."
+                                    placeholder={t('accounts.family.description_placeholder')}
                                     className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-base-300 bg-white dark:bg-base-200 text-gray-900 dark:text-base-content focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                                     maxLength={100}
                                 />
@@ -210,14 +212,14 @@ function FamilyManageDialog({ isOpen, onClose }: FamilyManageDialogProps) {
                                 onClick={onClose}
                                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-base-200 rounded-lg hover:bg-gray-200 dark:hover:bg-base-300 transition-colors"
                             >
-                                Close
+                                {t('accounts.family.close')}
                             </button>
                             <button
                                 onClick={() => { resetForm(); setMode('create'); }}
                                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5"
                             >
                                 <Plus className="w-4 h-4" />
-                                Create Family
+                                {t('accounts.family.create_family')}
                             </button>
                         </>
                     ) : (
@@ -226,14 +228,14 @@ function FamilyManageDialog({ isOpen, onClose }: FamilyManageDialogProps) {
                                 onClick={resetForm}
                                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-base-200 rounded-lg hover:bg-gray-200 dark:hover:bg-base-300 transition-colors"
                             >
-                                Back
+                                {t('accounts.family.back')}
                             </button>
                             <button
                                 onClick={mode === 'create' ? handleCreate : handleUpdate}
                                 disabled={!name.trim() || loading}
                                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {loading ? 'Saving...' : mode === 'create' ? 'Create' : 'Save'}
+                                {loading ? t('accounts.family.saving') : mode === 'create' ? t('accounts.family.create') : t('accounts.family.save')}
                             </button>
                         </>
                     )}
