@@ -84,6 +84,11 @@ function Families() {
         try {
             await deleteFamily(id);
             setConfirmDeleteId(null);
+            setExpandedFamilyIds(prev => {
+                const next = new Set(prev);
+                next.delete(id);
+                return next;
+            });
         } catch (e) {
             console.error('Delete family failed:', e);
         } finally {

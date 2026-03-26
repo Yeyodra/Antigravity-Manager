@@ -14,6 +14,7 @@ import {
   Sparkles,
   ToggleLeft,
   ToggleRight,
+  ChevronDown,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AccountDetailsDialog from "../components/accounts/AccountDetailsDialog";
@@ -229,6 +230,7 @@ function Accounts() {
   }, [localPageSize, config?.accounts_page_size, containerSize, viewMode]);
 
   const { families, fetchFamilies } = useFamilyStore();
+  const [showFamilyDropdown, setShowFamilyDropdown] = useState(false);
 
   useEffect(() => {
     fetchAccounts();
@@ -927,36 +929,67 @@ function Accounts() {
           </button>
         </div>
 
-        {/* Family filter tabs */}
+        {/* Family filter dropdown */}
         {families.length > 0 && (
-          <div className="flex gap-0.5 bg-gray-100/80 dark:bg-base-200 p-1 rounded-xl border border-gray-200/50 dark:border-white/5 shrink-0">
-            {families.map((family) => (
-              <button
-                key={family.id}
-                className={cn(
-                  "px-2 md:px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1 md:gap-1.5 whitespace-nowrap shrink-0",
-                  filter === `family:${family.id}`
-                    ? "bg-white dark:bg-base-100 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-black/5"
-                    : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-base-content hover:bg-white/40"
-                )}
-                onClick={() => setFilter(`family:${family.id}`)}
-                title={`${family.name} (${filterCounts.families[family.id] || 0})`}
-              >
-                <span
-                  className="w-2 h-2 rounded-full shrink-0"
-                  style={{ backgroundColor: family.color }}
-                />
-                <span className="hidden md:inline max-w-[80px] truncate">{family.name}</span>
-                <span className={cn(
-                  "px-1.5 py-0.5 rounded-md text-[10px] font-bold transition-colors",
-                  filter === `family:${family.id}`
-                    ? "bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400"
-                    : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
-                )}>
-                  {filterCounts.families[family.id] || 0}
-                </span>
-              </button>
-            ))}
+          <div className="relative shrink-0">
+            <button
+              className={cn(
+                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all whitespace-nowrap",
+                filter.startsWith('family:')
+                  ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/20"
+                  : "bg-gray-100 dark:bg-base-200 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              )}
+              onClick={() => setShowFamilyDropdown(!showFamilyDropdown)}
+            >
+              {filter.startsWith('family:') ? (
+                <>
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{ backgroundColor: families.find(f => f.id === filter.slice(7))?.color || '#6366F1' }}
+                  />
+                  <span className="max-w-[60px] truncate">
+                    {families.find(f => f.id === filter.slice(7))?.name || 'Family'}
+                  </span>
+                </>
+              ) : (
+                <span>Family</span>
+              )}
+              <ChevronDown className={cn("w-3 h-3 transition-transform", showFamilyDropdown && "rotate-180")} />
+            </button>
+
+            {showFamilyDropdown && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowFamilyDropdown(false)} />
+                <div className="absolute top-full left-0 mt-1 z-20 min-w-[160px] bg-white dark:bg-base-100 rounded-xl shadow-xl border border-gray-200 dark:border-base-300 py-1 overflow-hidden">
+                  {filter.startsWith('family:') && (
+                    <button
+                      onClick={() => { setFilter('all'); setShowFamilyDropdown(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-base-200 transition-colors"
+                    >
+                      Clear filter
+                    </button>
+                  )}
+                  {families.map((family) => (
+                    <button
+                      key={family.id}
+                      onClick={() => { setFilter(`family:${family.id}`); setShowFamilyDropdown(false); }}
+                      className={cn(
+                        "w-full flex items-center gap-2 px-3 py-1.5 text-xs transition-colors",
+                        filter === `family:${family.id}`
+                          ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-semibold"
+                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-base-200"
+                      )}
+                    >
+                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: family.color }} />
+                      <span className="flex-1 truncate text-left">{family.name}</span>
+                      <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500">
+                        {filterCounts.families[family.id] || 0}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         )}
 
