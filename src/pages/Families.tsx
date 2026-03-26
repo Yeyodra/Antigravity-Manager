@@ -24,7 +24,7 @@ function Families() {
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
     const [assignSearch, setAssignSearch] = useState('');
     const [addingToFamilyId, setAddingToFamilyId] = useState<string | null>(null);
-    const [expandedFamilyId, setExpandedFamilyId] = useState<string | null>(null);
+    const [expandedFamilyIds, setExpandedFamilyIds] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         fetchFamilies();
@@ -291,7 +291,7 @@ function Families() {
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {families.map((family) => {
                             const familyAccounts = getAccountsForFamily(family.id);
-                            const isExpanded = expandedFamilyId === family.id;
+                            const isExpanded = expandedFamilyIds.has(family.id);
 
                             return (
                                 <div
@@ -305,7 +305,15 @@ function Families() {
                                         {/* Header - clickable to expand/collapse */}
                                         <div
                                             className="flex items-center gap-3 p-4 cursor-pointer hover:bg-gray-50/50 dark:hover:bg-base-200/30 transition-colors select-none"
-                                            onClick={() => setExpandedFamilyId(isExpanded ? null : family.id)}
+                                            onClick={() => setExpandedFamilyIds(prev => {
+                                const next = new Set(prev);
+                                if (next.has(family.id)) {
+                                    next.delete(family.id);
+                                } else {
+                                    next.add(family.id);
+                                }
+                                return next;
+                            })}
                                         >
                                             <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: family.color }} />
                                             <div className="flex-1 min-w-0">
