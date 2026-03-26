@@ -9,7 +9,9 @@ import {
   Upload,
   LayoutGrid,
   LayoutList,
+  List,
   Flame,
+  Sparkles,
   ToggleLeft,
   ToggleRight,
 } from "lucide-react";
