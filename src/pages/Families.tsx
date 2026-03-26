@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Plus, Pencil, Trash2, Users, UserPlus, Search, Shield, X, User, UserCheck } from 'lucide-react';
+import { Plus, Pencil, Trash2, Users, UserPlus, Search, Shield, X, User, UserCheck, ChevronDown } from 'lucide-react';
 import { useFamilyStore } from '../stores/useFamilyStore';
 import { useAccountStore } from '../stores/useAccountStore';
 import { cn } from '../utils/cn';
@@ -24,6 +24,7 @@ function Families() {
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
     const [assignSearch, setAssignSearch] = useState('');
     const [addingToFamilyId, setAddingToFamilyId] = useState<string | null>(null);
+    const [expandedFamilyId, setExpandedFamilyId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchFamilies();
@@ -290,67 +291,68 @@ function Families() {
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {families.map((family) => {
                             const familyAccounts = getAccountsForFamily(family.id);
+                            const isExpanded = expandedFamilyId === family.id;
 
                             return (
                                 <div
                                     key={family.id}
-                                    className="bg-white dark:bg-base-100 rounded-3xl border border-gray-200 dark:border-base-300 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col relative group"
+                                    className="bg-white dark:bg-base-100 rounded-2xl border border-gray-200 dark:border-base-300 shadow-sm overflow-hidden flex flex-col relative group"
                                 >
-                                    {/* Top Accent Bar */}
-                                    <div className="h-2.5 w-full" style={{ backgroundColor: family.color }} />
-                                    
-                                    {/* Background Tint */}
-                                    <div className="absolute top-2.5 left-0 right-0 h-32 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" style={{ background: `linear-gradient(to bottom, ${family.color}, transparent)` }} />
+                                    {/* Top Accent - subtle line instead of thick bar */}
+                                    <div className="h-1 w-full opacity-60" style={{ backgroundColor: family.color }} />
 
-                                    <div className="p-6 flex-1 flex flex-col z-10">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div className="min-w-0 pr-4">
-                                                <h3 className="text-lg font-bold text-gray-900 dark:text-base-content flex items-center gap-2 truncate">
-                                                    {family.name}
-                                                    <span className="px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-base-200 text-xs font-bold text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-base-300 shrink-0">
-                                                        {familyAccounts.length}
-                                                    </span>
-                                                </h3>
+                                    <div className="flex-1 flex flex-col">
+                                        {/* Header - clickable to expand/collapse */}
+                                        <div
+                                            className="flex items-center gap-3 p-4 cursor-pointer hover:bg-gray-50/50 dark:hover:bg-base-200/30 transition-colors select-none"
+                                            onClick={() => setExpandedFamilyId(isExpanded ? null : family.id)}
+                                        >
+                                            <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: family.color }} />
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="text-sm font-bold text-gray-900 dark:text-base-content truncate">{family.name}</h3>
                                                 {family.description && (
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1.5 line-clamp-2">{family.description}</p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-500 truncate mt-0.5">{family.description}</p>
                                                 )}
                                             </div>
-                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                                                <button onClick={() => startEdit(family.id)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-colors">
-                                                    <Pencil className="w-4 h-4" />
+                                            <span className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-base-200 text-[10px] font-bold text-gray-500 dark:text-gray-500 shrink-0">
+                                                {familyAccounts.length}
+                                            </span>
+                                            <div className="flex items-center gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                                                <button onClick={() => startEdit(family.id)} className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-base-200 dark:hover:bg-base-200 rounded-lg transition-colors">
+                                                    <Pencil className="w-3.5 h-3.5" />
                                                 </button>
-                                                <button onClick={() => setConfirmDeleteId(family.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors">
-                                                    <Trash2 className="w-4 h-4" />
+                                                <button onClick={() => setConfirmDeleteId(family.id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-base-200 dark:hover:bg-base-200 rounded-lg transition-colors">
+                                                    <Trash2 className="w-3.5 h-3.5" />
                                                 </button>
                                             </div>
+                                            <ChevronDown className={cn(
+                                                "w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform shrink-0",
+                                                isExpanded && "rotate-180"
+                                            )} />
                                         </div>
 
-                                        {/* Accounts List */}
-                                        <div className="mt-2 flex-1 flex flex-col min-h-0">
-                                            <h4 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 shrink-0">Members</h4>
-                                            <div className="overflow-y-auto pr-2 -mr-2 space-y-2 flex-1 min-h-[120px] max-h-[240px]">
-                                                {familyAccounts.length > 0 ? (
-                                                    familyAccounts.map(account => (
-                                                        <div key={account.id} className="flex items-center justify-between group/account p-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-base-200/50 border border-transparent hover:border-gray-100 dark:hover:border-base-300 transition-colors">
-                                                            <div className="flex items-center gap-3 min-w-0">
-                                                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-base-200 dark:to-base-300 flex items-center justify-center shrink-0 border border-gray-200 dark:border-base-300">
-                                                                    <span className="text-xs font-bold text-gray-600 dark:text-gray-400">
+                                        {/* Collapsible content */}
+                                        {isExpanded && (
+                                            <div className="border-t border-gray-100 dark:border-base-200">
+                                                {/* Members list */}
+                                                <div className="overflow-y-auto max-h-[240px]">
+                                                    {familyAccounts.length > 0 ? (
+                                                        familyAccounts.map(account => (
+                                                            <div key={account.id} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50/50 dark:hover:bg-base-200/30 group/account transition-colors">
+                                                                <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-base-200 flex items-center justify-center shrink-0">
+                                                                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-500">
                                                                         {account.email.charAt(0).toUpperCase()}
                                                                     </span>
                                                                 </div>
-                                                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate" title={account.email}>
-                                                                    {account.email.split('@')[0]}<span className="text-gray-400 font-normal">@{account.email.split('@')[1]}</span>
-                                                                </span>
-                                                            </div>
-                                                            <div className="flex items-center gap-2 shrink-0 pl-2">
+                                                                <span className="flex-1 text-xs text-gray-600 dark:text-gray-400 truncate">{account.email}</span>
                                                                 {account.quota?.subscription_tier && (
                                                                     <span className={cn(
-                                                                        "px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wide",
+                                                                        "px-1.5 py-0.5 rounded text-[9px] font-bold",
                                                                         account.quota.subscription_tier.toLowerCase().includes('pro')
-                                                                            ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                                                                            ? "bg-blue-500/10 text-blue-500 dark:text-blue-400"
                                                                             : account.quota.subscription_tier.toLowerCase().includes('ultra')
-                                                                                ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
-                                                                                : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+                                                                                ? "bg-purple-500/10 text-purple-500 dark:text-purple-400"
+                                                                                : "bg-gray-500/10 text-gray-500 dark:text-gray-500"
                                                                     )}>
                                                                         {account.quota.subscription_tier.toLowerCase().includes('ultra') ? 'ULTRA' :
                                                                          account.quota.subscription_tier.toLowerCase().includes('pro') ? 'PRO' : 'FREE'}
@@ -358,103 +360,100 @@ function Families() {
                                                                 )}
                                                                 <button
                                                                     onClick={() => handleUnassign(account.id)}
-                                                                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover/account:opacity-100 transition-all"
+                                                                    className="p-1 text-gray-400 hover:text-red-500 rounded opacity-0 group-hover/account:opacity-100 transition-all"
                                                                     title={t('accounts.family.unassign', 'Remove')}
                                                                 >
-                                                                    <X className="w-3.5 h-3.5" />
+                                                                    <X className="w-3 h-3" />
                                                                 </button>
                                                             </div>
-                                                        </div>
-                                                    ))
-                                                ) : (
-                                                    <div className="h-full flex flex-col items-center justify-center py-6 text-center border-2 border-dashed border-gray-100 dark:border-base-200 rounded-2xl">
-                                                        <p className="text-sm text-gray-400 dark:text-gray-500">No members yet</p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Add Account Button / Popover */}
-                                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-base-200 relative">
-                                            {addingToFamilyId === family.id && (
-                                                <div className="absolute bottom-full left-0 w-full mb-3 bg-white dark:bg-base-100 rounded-2xl border border-gray-200 dark:border-base-300 shadow-xl overflow-hidden z-20 animate-in slide-in-from-bottom-2 duration-200">
-                                                    <div className="p-3 border-b border-gray-100 dark:border-base-200 bg-gray-50/50 dark:bg-base-200/50">
-                                                        <div className="relative">
-                                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                                            <input
-                                                                type="text"
-                                                                value={assignSearch}
-                                                                onChange={(e) => setAssignSearch(e.target.value)}
-                                                                placeholder="Search accounts to add..."
-                                                                className="w-full pl-9 pr-3 py-2 text-sm rounded-xl bg-white dark:bg-base-100 border border-gray-200 dark:border-base-300 text-gray-900 dark:text-base-content focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-shadow"
-                                                                autoFocus
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    <div className="max-h-56 overflow-y-auto p-2">
-                                                        {filteredUnassigned.length > 0 ? (
-                                                            filteredUnassigned.map(account => (
-                                                                <button
-                                                                    key={account.id}
-                                                                    onClick={() => {
-                                                                        handleAssign(account.id, family.id);
-                                                                        setAddingToFamilyId(null);
-                                                                        setAssignSearch('');
-                                                                    }}
-                                                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 rounded-xl transition-colors group/add"
-                                                                >
-                                                                    <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-base-200 flex items-center justify-center group-hover/add:bg-blue-100 dark:group-hover/add:bg-blue-900/40 transition-colors">
-                                                                        <UserPlus className="w-3.5 h-3.5" />
-                                                                    </div>
-                                                                    <span className="truncate font-medium">{account.email}</span>
-                                                                </button>
-                                                            ))
-                                                        ) : (
-                                                            <div className="py-6 text-center">
-                                                                <p className="text-sm text-gray-500 dark:text-gray-400">No unassigned accounts found</p>
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                        ))
+                                                    ) : (
+                                                        <p className="px-4 py-6 text-xs text-gray-400 dark:text-gray-600 text-center">
+                                                            No members yet
+                                                        </p>
+                                                    )}
                                                 </div>
-                                            )}
-                                            
-                                            <button
-                                                onClick={() => {
-                                                    setAddingToFamilyId(addingToFamilyId === family.id ? null : family.id);
-                                                    setAssignSearch('');
-                                                }}
-                                                className={cn(
-                                                    "w-full py-2.5 flex items-center justify-center gap-2 text-sm font-bold rounded-xl transition-all",
-                                                    addingToFamilyId === family.id 
-                                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400" 
-                                                        : "text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 bg-gray-50 dark:bg-base-200/50"
-                                                )}
-                                            >
-                                                <Plus className={cn("w-4 h-4 transition-transform", addingToFamilyId === family.id && "rotate-45")} />
-                                                {addingToFamilyId === family.id ? 'Close' : 'Add Member'}
-                                            </button>
-                                        </div>
+
+                                                {/* Add member button */}
+                                                <div className="relative border-t border-gray-100 dark:border-base-200 p-2">
+                                                    {addingToFamilyId === family.id && (
+                                                        <div className="absolute bottom-full left-0 w-full mb-2 bg-white dark:bg-base-100 rounded-xl border border-gray-200 dark:border-base-300 shadow-xl overflow-hidden z-20">
+                                                            <div className="p-2 border-b border-gray-100 dark:border-base-200">
+                                                                <div className="relative">
+                                                                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                                                                    <input
+                                                                        type="text"
+                                                                        value={assignSearch}
+                                                                        onChange={(e) => setAssignSearch(e.target.value)}
+                                                                        placeholder="Search accounts..."
+                                                                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-gray-50 dark:bg-base-200 border border-gray-200 dark:border-base-300 text-gray-900 dark:text-base-content focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+                                                                        autoFocus
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                            <div className="max-h-48 overflow-y-auto p-1">
+                                                                {filteredUnassigned.length > 0 ? (
+                                                                    filteredUnassigned.map(account => (
+                                                                        <button
+                                                                            key={account.id}
+                                                                            onClick={() => {
+                                                                                handleAssign(account.id, family.id);
+                                                                                setAddingToFamilyId(null);
+                                                                                setAssignSearch('');
+                                                                            }}
+                                                                            className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:bg-blue-500/10 hover:text-blue-500 dark:hover:text-blue-400 rounded-lg transition-colors"
+                                                                        >
+                                                                            <UserPlus className="w-3 h-3 shrink-0" />
+                                                                            <span className="truncate">{account.email}</span>
+                                                                        </button>
+                                                                    ))
+                                                                ) : (
+                                                                    <p className="py-4 text-xs text-gray-400 dark:text-gray-600 text-center">No unassigned accounts</p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setAddingToFamilyId(addingToFamilyId === family.id ? null : family.id);
+                                                            setAssignSearch('');
+                                                        }}
+                                                        className={cn(
+                                                            "w-full py-2 flex items-center justify-center gap-1.5 text-xs font-medium rounded-lg transition-colors",
+                                                            addingToFamilyId === family.id
+                                                                ? "bg-blue-500/10 text-blue-500 dark:text-blue-400"
+                                                                : "text-gray-500 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-500/10 bg-gray-100/50 dark:bg-base-200/50"
+                                                        )}
+                                                    >
+                                                        <Plus className={cn("w-3.5 h-3.5 transition-transform", addingToFamilyId === family.id && "rotate-45")} />
+                                                        {addingToFamilyId === family.id ? 'Close' : 'Add Member'}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                    
+
                                     {/* Delete Confirmation Overlay */}
                                     {confirmDeleteId === family.id && (
-                                        <div className="absolute inset-0 bg-white/95 dark:bg-base-100/95 backdrop-blur-sm z-30 flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-200">
-                                            <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
-                                                <Trash2 className="w-7 h-7 text-red-600 dark:text-red-400" />
+                                        <div className="absolute inset-0 bg-base-100/95 dark:bg-base-100/95 backdrop-blur-sm z-30 flex flex-col items-center justify-center p-6 text-center">
+                                            <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mb-3">
+                                                <Trash2 className="w-6 h-6 text-red-500" />
                                             </div>
-                                            <h4 className="text-lg font-bold text-gray-900 dark:text-base-content mb-2">Delete Family?</h4>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">This will unassign all members. This action cannot be undone.</p>
-                                            <div className="flex gap-3 w-full">
+                                            <h4 className="text-sm font-bold text-gray-900 dark:text-base-content mb-1">Delete Family?</h4>
+                                            <p className="text-xs text-gray-500 dark:text-gray-500 mb-4">This will unassign all members.</p>
+                                            <div className="flex gap-2 w-full">
                                                 <button
                                                     onClick={() => setConfirmDeleteId(null)}
-                                                    className="flex-1 py-2.5 text-sm font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-base-200 rounded-xl hover:bg-gray-200 dark:hover:bg-base-300 transition-colors"
+                                                    className="flex-1 py-2 text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-base-200 rounded-lg hover:bg-gray-200 dark:hover:bg-base-300 transition-colors"
                                                 >
                                                     Cancel
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(family.id)}
                                                     disabled={loading}
-                                                    className="flex-1 py-2.5 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 shadow-sm"
+                                                    className="flex-1 py-2 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
                                                 >
                                                     {loading ? 'Deleting...' : 'Delete'}
                                                 </button>
