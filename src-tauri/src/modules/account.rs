@@ -325,7 +325,7 @@ mod tests {
 static ACCOUNT_INDEX_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 
 // ... existing constants ...
-const DATA_DIR: &str = ".antigravity_tools";
+const DATA_DIR: &str = ".antigravity_fork_tools";
 const ACCOUNTS_INDEX: &str = "accounts.json";
 const ACCOUNTS_DIR: &str = "accounts";
 

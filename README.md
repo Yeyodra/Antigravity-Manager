@@ -186,10 +186,10 @@ docker run -d --name antigravity-manager \
   -e API_KEY=sk-your-api-key \
   -e WEB_PASSWORD=your-login-password \
   -e ABV_MAX_BODY_SIZE=104857600 \
-  -v ~/.antigravity_tools:/root/.antigravity_tools \
+  -v ~/.antigravity_fork_tools:/root/.antigravity_fork_tools \
   lbjlaq/antigravity-manager:latest
 
-# 忘记密钥？执行 docker logs antigravity-manager 或 grep -E '"api_key"|"admin_password"' ~/.antigravity_tools/gui_config.json
+# 忘记密钥？执行 docker logs antigravity-manager 或 grep -E '"api_key"|"admin_password"' ~/.antigravity_fork_tools/gui_config.json
 
 #### 🔐 鉴权逻辑说明
 *   **场景 A：仅设置了 `API_KEY`**
@@ -203,7 +203,7 @@ docker run -d --name antigravity-manager \
 如果您是从 v4.0.1 及更早版本升级，系统默认未设置 `WEB_PASSWORD`。您可以通过以下任一方式设置：
 1.  **Web UI 界面 (推荐)**：使用原有 `API_KEY` 登录后，在 **API 反代设置** 页面手动设置并保存。新密码将持久化存储在 `gui_config.json` 中。
 2.  **环境变量 (Docker)**：在启动容器时增加 `-e WEB_PASSWORD=您的新密码`。**注意：环境变量具有最高优先级，将覆盖 UI 中的任何修改。**
-3.  **配置文件 (持久化)**：直接修改 `~/.antigravity_tools/gui_config.json`，在 `proxy` 对象中修改或添加 `"admin_password": "您的新密码"` 字段。
+3.  **配置文件 (持久化)**：直接修改 `~/.antigravity_fork_tools/gui_config.json`，在 `proxy` 对象中修改或添加 `"admin_password": "您的新密码"` 字段。
     - *注：`WEB_PASSWORD` 是环境变量名，`admin_password` 是配置文件中的 JSON 键名。*
 
 > [!TIP]
@@ -221,7 +221,7 @@ docker compose up -d
 > **访问地址**: `http://localhost:8045` (管理后台) | `http://localhost:8045/v1` (API Base)
 > **系统要求**:
 > - **内存**: 建议 **1GB** (最小 256MB)。
-> - **持久化**: 需挂载 `/root/.antigravity_tools` 以保存数据。
+> - **持久化**: 需挂载 `/root/.antigravity_fork_tools` 以保存数据。
 > - **架构**: 支持 x86_64 和 ARM64。
 > **详情见**: [Docker 部署指南 (docker)](./docker/README.md)
 
@@ -1967,7 +1967,7 @@ response = client.chat.completions.create(
         - **智能预热策略优化 (PR #606 - 性能提升 2.9x-5x)**:
             - **分离刷新和预热**: 移除配额刷新时的自动预热触发,预热仅通过定时调度器(每10分钟)或手动按钮触发,避免用户刷新配额时意外消耗预热额度。
             - **延长冷却期**: 冷却期从30分钟延长至4小时(14400秒),匹配 Pro 账号5小时重置周期,解决同一周期内重复预热问题。
-            - **持久化历史记录**: 预热历史保存至 `~/.antigravity_tools/warmup_history.json`,程序重启后冷却期仍然有效,解决状态丢失问题。
+            - **持久化历史记录**: 预热历史保存至 `~/.antigravity_fork_tools/warmup_history.json`,程序重启后冷却期仍然有效,解决状态丢失问题。
             - **并发执行优化**: 
                 - 筛选阶段: 每批5个账号并发获取配额,10个账号从~15秒降至~3秒 (5倍提升)
                 - 预热阶段: 每批3个任务并发执行,批次间隔2秒,40个任务从~80秒降至~28秒 (2.9倍提升)

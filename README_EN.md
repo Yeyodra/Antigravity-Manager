@@ -187,10 +187,10 @@ docker run -d --name antigravity-manager \
   -e API_KEY=sk-your-api-key \
   -e WEB_PASSWORD=your-login-password \
   -e ABV_MAX_BODY_SIZE=104857600 \
-  -v ~/.antigravity_tools:/root/.antigravity_tools \
+  -v ~/.antigravity_fork_tools:/root/.antigravity_fork_tools \
   lbjlaq/antigravity-manager:latest
 
-# Forgot keys? Run `docker logs antigravity-manager` or `grep -E '"api_key"|"admin_password"' ~/.antigravity_tools/gui_config.json`
+# Forgot keys? Run `docker logs antigravity-manager` or `grep -E '"api_key"|"admin_password"' ~/.antigravity_fork_tools/gui_config.json`
 
 #### 🔐 Authentication Scenarios
 *   **Scenario A: Only `API_KEY` is set**
@@ -204,7 +204,7 @@ docker run -d --name antigravity-manager \
 If you are upgrading from v4.0.1 or earlier, your installation won't have a `WEB_PASSWORD` set by default. You can add one using any of these methods:
 1.  **Web UI (Recommended)**: Log in using your existing `API_KEY`, go to the **API Proxy Settings** page, find the **Web UI Management Password** section below the API Key, set your new password, and save.
 2.  **Environment Variable (Docker)**: Stop the old container and start the new one with the added parameter `-e WEB_PASSWORD=your_new_password`. **Note: Environment variables have the highest priority and will override any changes in the UI.**
-3.  **Config File (Persistent)**: Directly edit `~/.antigravity_tools/gui_config.json` and add/modify `"admin_password": "your_new_password"` inside the `proxy` object.
+3.  **Config File (Persistent)**: Directly edit `~/.antigravity_fork_tools/gui_config.json` and add/modify `"admin_password": "your_new_password"` inside the `proxy` object.
     - *Note: `WEB_PASSWORD` is the environment variable name, while `admin_password` is the JSON key in the config file.*
 
 > [!TIP]
@@ -222,7 +222,7 @@ docker compose up -d
 > **Access URL**: `http://localhost:8045` (Admin Console) | `http://localhost:8045/v1` (API Base)
 > **System Requirements**:
 > - **RAM**: **1GB** recommended (minimum 256MB).
-> - **Persistence**: Mount `/root/.antigravity_tools` to persist your data.
+> - **Persistence**: Mount `/root/.antigravity_fork_tools` to persist your data.
 > - **Architecture**: Supports x86_64 and ARM64.
 > **See**: [Docker Deployment Guide (docker)](./docker/README.md)
 
@@ -1774,7 +1774,7 @@ print(response.choices[0].message.content)
         - **Smart Warmup Strategy Optimization (PR #606 - 2.9x-5x Performance Boost)**:
             - **Separated Refresh and Warmup**: Removed automatic warmup trigger during quota refresh. Warmup now only triggers via scheduler (every 10 minutes) or manual button, avoiding accidental quota consumption when users refresh quotas.
             - **Extended Cooldown Period**: Cooldown period extended from 30 minutes to 4 hours (14400 seconds), matching Pro account 5-hour reset cycle, completely resolving repeated warmup within the same cycle.
-            - **Persistent History Records**: Warmup history saved to `~/.antigravity_tools/warmup_history.json`, cooldown period remains effective after program restart, resolving state loss issue.
+            - **Persistent History Records**: Warmup history saved to `~/.antigravity_fork_tools/warmup_history.json`, cooldown period remains effective after program restart, resolving state loss issue.
             - **Concurrent Execution Optimization**: 
                 - Filtering phase: 5 accounts per batch concurrent quota fetching, 10 accounts from ~15s to ~3s (5x improvement)
                 - Warmup phase: 3 tasks per batch concurrent execution with 2s interval, 40 tasks from ~80s to ~28s (2.9x improvement)

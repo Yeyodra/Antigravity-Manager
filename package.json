@@ -1,6 +1,6 @@
 {
   "version": "4.1.31",
-  "name": "antigravity-tools",
+  "name": "antigravity-fork-tools",
   "type": "module",
   "private": true,
   "scripts": {

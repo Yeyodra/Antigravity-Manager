@@ -351,7 +351,7 @@ pub fn run() {
                 info!("Tray disabled for this session");
             }
 
-            // 立即启动管理服务器 (8045)，以便 Web 端能访问
+            // 立即启动管理服务器 (8046)，以便 Web 端能访问
             let handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 // Load config
@@ -393,8 +393,8 @@ pub fn run() {
             // modules::scheduler::start_scheduler(Some(app.handle().clone()), scheduler_state.inner().clone());
             info!("Smart scheduler (Automatic Warmup) is DISABLED.");
 
-            // [PHASE 1] 已整合至 Axum 端口 (8045)，不再单独启动 19527 端口
-            info!("Management API integrated into main proxy server (port 8045)");
+            // [PHASE 1] 已整合至 Axum 端口 (8046)，不再单独启动 19527 端口
+            info!("Management API integrated into main proxy server (port 8046)");
 
             Ok(())
         })

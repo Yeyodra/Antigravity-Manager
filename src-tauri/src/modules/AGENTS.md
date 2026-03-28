@@ -19,7 +19,7 @@ Backend modules for account management, OAuth, device fingerprinting, process co
 | Cache cleanup | `cache.rs` | Translation cache, log fingerprints |
 
 ## CONVENTIONS
-- **Account storage**: Individual JSON files at `~/.antigravity_tools/[uuid].json`. Index in `accounts.json`.
+- **Account storage**: Individual JSON files at `~/.antigravity_fork_tools/[uuid].json`. Index in `accounts.json`.
 - **Unsafe code**: `account.rs:628` uses `unsafe { MoveFileExW }` for atomic renames on Windows — required, do not replace with safe alternative (it doesn't exist for cross-partition moves).
 - **Platform branching**: `process.rs` and `version.rs` use extensive `#[cfg]` blocks. Test on all 3 platforms.
 - **Error handling**: Uses `anyhow::Result` throughout. Tauri commands return `Result<T, String>` (Tauri IPC constraint).

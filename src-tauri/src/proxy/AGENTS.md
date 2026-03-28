@@ -1,7 +1,7 @@
 # proxy/ — Axum Proxy Server (The Engine)
 
 ## OVERVIEW
-Self-contained Axum HTTP server (port 8045) that translates OpenAI/Claude/Gemini API protocols to Google's internal `v1internal` API format with multi-account rotation, quota protection, and context compression.
+Self-contained Axum HTTP server (port 8046) that translates OpenAI/Claude/Gemini API protocols to Google's internal `v1internal` API format with multi-account rotation, quota protection, and context compression.
 
 ## STRUCTURE
 ```

@@ -85,7 +85,7 @@ function Settings() {
     // Dialog state
     const [isClearLogsOpen, setIsClearLogsOpen] = useState(false);
     const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
-    const [dataDirPath, setDataDirPath] = useState<string>('~/.antigravity_tools/');
+    const [dataDirPath, setDataDirPath] = useState<string>('~/.antigravity_fork_tools/');
 
     // Antigravity cache clearing state
     const [isClearCacheOpen, setIsClearCacheOpen] = useState(false);
