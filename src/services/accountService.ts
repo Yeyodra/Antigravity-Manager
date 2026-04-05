@@ -204,10 +204,20 @@ export async function warmUpAccount(accountId: string): Promise<string> {
 export interface ExportAccountItem {
     email: string;
     refresh_token: string;
+    family_ids?: string[];
+}
+
+export interface ExportFamily {
+    id: string;
+    name: string;
+    color: string;
+    description?: string;
+    created_at: number;
 }
 
 export interface ExportAccountsResponse {
     accounts: ExportAccountItem[];
+    families?: ExportFamily[];
 }
 
 export async function exportAccounts(accountIds: string[]): Promise<ExportAccountsResponse> {

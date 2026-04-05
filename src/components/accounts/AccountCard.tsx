@@ -200,7 +200,7 @@ function AccountCard({ account, selected, onSelect, isCurrent: propIsCurrent, is
                                 }
                             })()}
                             {/* Family badge */}
-                            <FamilyBadge familyId={account.family_id} />
+                            <FamilyBadge familyIds={account.family_ids} />
                             {/* 自定义标签 */}
                             {account.custom_label && (
                                 <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 text-[9px] font-bold shadow-sm border border-orange-200/50 dark:border-orange-800/50">

@@ -34,13 +34,22 @@ pub async fn delete_family(id: String) -> Result<(), String> {
     modules::family::delete_family(id)
 }
 
-/// Assign an account to a family group (pass null/None to unassign)
+/// Assign an account to a family group (add to family_ids list)
 #[tauri::command]
 pub async fn assign_account_family(
     account_id: String,
     family_id: Option<String>,
 ) -> Result<(), String> {
     modules::family::assign_account_to_family(&account_id, family_id)
+}
+
+/// Remove an account from a specific family group
+#[tauri::command]
+pub async fn unassign_account_family(
+    account_id: String,
+    family_id: String,
+) -> Result<(), String> {
+    modules::family::unassign_account_from_family(&account_id, &family_id)
 }
 
 /// Batch assign multiple accounts to a family group

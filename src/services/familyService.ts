@@ -37,6 +37,13 @@ export async function assignAccountFamily(
     return await invoke('assign_account_family', { accountId, familyId });
 }
 
+export async function unassignAccountFamily(
+    accountId: string,
+    familyId: string,
+): Promise<void> {
+    return await invoke('unassign_account_family', { accountId, familyId });
+}
+
 export async function batchAssignAccountFamily(
     accountIds: string[],
     familyId: string | null,

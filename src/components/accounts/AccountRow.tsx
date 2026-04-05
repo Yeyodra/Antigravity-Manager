@@ -157,7 +157,7 @@ function AccountRow({ account, selected, onSelect, isCurrent, isRefreshing, isSw
                         })()}
 
                         {/* Family badge */}
-                        <FamilyBadge familyId={account.family_id} />
+                        <FamilyBadge familyIds={account.family_ids} />
                     </div>
                 </div>
             </td>

@@ -13,6 +13,7 @@ interface FamilyState {
     updateFamily: (id: string, name?: string, color?: string, description?: string) => Promise<Family>;
     deleteFamily: (id: string) => Promise<void>;
     assignAccountFamily: (accountId: string, familyId: string | null) => Promise<void>;
+    unassignAccountFamily: (accountId: string, familyId: string) => Promise<void>;
     batchAssignAccountFamily: (accountIds: string[], familyId: string | null) => Promise<number>;
     setSelectedFamilyId: (id: string | null) => void;
 }
@@ -79,6 +80,15 @@ export const useFamilyStore = create<FamilyState>((set, get) => ({
     assignAccountFamily: async (accountId: string, familyId: string | null) => {
         try {
             await familyService.assignAccountFamily(accountId, familyId);
+        } catch (error) {
+            set({ error: String(error) });
+            throw error;
+        }
+    },
+
+    unassignAccountFamily: async (accountId: string, familyId: string) => {
+        try {
+            await familyService.unassignAccountFamily(accountId, familyId);
         } catch (error) {
             set({ error: String(error) });
             throw error;

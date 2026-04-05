@@ -12,7 +12,7 @@ const PRESET_COLORS = [
 
 function Families() {
     const { t } = useTranslation();
-    const { families, fetchFamilies, createFamily, updateFamily, deleteFamily, assignAccountFamily } = useFamilyStore();
+    const { families, fetchFamilies, createFamily, updateFamily, deleteFamily, assignAccountFamily, unassignAccountFamily } = useFamilyStore();
     const { accounts, fetchAccounts } = useAccountStore();
 
     const [mode, setMode] = useState<'list' | 'create' | 'edit'>('list');
@@ -32,18 +32,24 @@ function Families() {
     }, []);
 
     const unassignedAccounts = useMemo(() => {
-        return accounts.filter(a => !a.family_id);
+        return accounts.filter(a => !a.family_ids || a.family_ids.length === 0);
     }, [accounts]);
 
     const getAccountsForFamily = (familyId: string) => {
-        return accounts.filter(a => a.family_id === familyId);
+        return accounts.filter(a => a.family_ids?.includes(familyId));
     };
 
-    const filteredUnassigned = useMemo(() => {
-        if (!assignSearch) return unassignedAccounts;
+    // For Add Member modal: show accounts NOT YET in the target family
+    const availableForFamily = useMemo(() => {
+        if (!addingToFamilyId) return [];
+        return accounts.filter(a => !a.family_ids?.includes(addingToFamilyId));
+    }, [accounts, addingToFamilyId]);
+
+    const filteredAvailable = useMemo(() => {
+        if (!assignSearch) return availableForFamily;
         const q = assignSearch.toLowerCase();
-        return unassignedAccounts.filter(a => a.email.toLowerCase().includes(q));
-    }, [unassignedAccounts, assignSearch]);
+        return availableForFamily.filter(a => a.email.toLowerCase().includes(q));
+    }, [availableForFamily, assignSearch]);
 
     const resetForm = () => {
         setName('');
@@ -105,9 +111,9 @@ function Families() {
         }
     };
 
-    const handleUnassign = async (accountId: string) => {
+    const handleUnassign = async (accountId: string, familyId: string) => {
         try {
-            await assignAccountFamily(accountId, null);
+            await unassignAccountFamily(accountId, familyId);
             await fetchAccounts();
         } catch (e) {
             console.error('Unassign failed:', e);
@@ -125,7 +131,7 @@ function Families() {
     };
 
     const totalFamilies = families.length;
-    const assignedAccountsCount = accounts.filter(a => a.family_id).length;
+    const assignedAccountsCount = accounts.filter(a => a.family_ids && a.family_ids.length > 0).length;
     const unassignedAccountsCount = unassignedAccounts.length;
 
     return (
@@ -261,11 +267,6 @@ function Families() {
                 </div>
             )}
 
-            {/* Global Click-away overlay for popovers */}
-            {addingToFamilyId && (
-                <div className="fixed inset-0 z-10" onClick={() => setAddingToFamilyId(null)} />
-            )}
-
             {/* Family Grid */}
             <div className="flex-1 pb-10">
                 {families.length === 0 ? (
@@ -372,7 +373,7 @@ function Families() {
                                                                     </span>
                                                                 )}
                                                                 <button
-                                                                    onClick={() => handleUnassign(account.id)}
+                                                                    onClick={() => handleUnassign(account.id, family.id)}
                                                                     className="p-1 text-gray-400 hover:text-red-500 rounded opacity-0 group-hover/account:opacity-100 transition-all"
                                                                     title={t('accounts.family.unassign', 'Remove')}
                                                                 >
@@ -388,60 +389,17 @@ function Families() {
                                                 </div>
 
                                                 {/* Add member button */}
-                                                <div className="relative border-t border-gray-100 dark:border-base-200 p-2">
-                                                    {addingToFamilyId === family.id && (
-                                                        <div className="absolute bottom-full left-0 w-full mb-2 bg-white dark:bg-base-100 rounded-xl border border-gray-200 dark:border-base-300 shadow-xl overflow-hidden z-20">
-                                                            <div className="p-2 border-b border-gray-100 dark:border-base-200">
-                                                                <div className="relative">
-                                                                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                                                                    <input
-                                                                        type="text"
-                                                                        value={assignSearch}
-                                                                        onChange={(e) => setAssignSearch(e.target.value)}
-                                                                        placeholder="Search accounts..."
-                                                                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-gray-50 dark:bg-base-200 border border-gray-200 dark:border-base-300 text-gray-900 dark:text-base-content focus:outline-none focus:ring-1 focus:ring-blue-500/50"
-                                                                        autoFocus
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                            <div className="max-h-48 overflow-y-auto p-1">
-                                                                {filteredUnassigned.length > 0 ? (
-                                                                    filteredUnassigned.map(account => (
-                                                                        <button
-                                                                            key={account.id}
-                                                                            onClick={() => {
-                                                                                handleAssign(account.id, family.id);
-                                                                                setAddingToFamilyId(null);
-                                                                                setAssignSearch('');
-                                                                            }}
-                                                                            className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:bg-blue-500/10 hover:text-blue-500 dark:hover:text-blue-400 rounded-lg transition-colors"
-                                                                        >
-                                                                            <UserPlus className="w-3 h-3 shrink-0" />
-                                                                            <span className="truncate">{account.email}</span>
-                                                                        </button>
-                                                                    ))
-                                                                ) : (
-                                                                    <p className="py-4 text-xs text-gray-400 dark:text-gray-600 text-center">No unassigned accounts</p>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    )}
-
+                                                <div className="border-t border-gray-100 dark:border-base-200 p-2">
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            setAddingToFamilyId(addingToFamilyId === family.id ? null : family.id);
+                                                            setAddingToFamilyId(family.id);
                                                             setAssignSearch('');
                                                         }}
-                                                        className={cn(
-                                                            "w-full py-2 flex items-center justify-center gap-1.5 text-xs font-medium rounded-lg transition-colors",
-                                                            addingToFamilyId === family.id
-                                                                ? "bg-blue-500/10 text-blue-500 dark:text-blue-400"
-                                                                : "text-gray-500 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-500/10 bg-gray-100/50 dark:bg-base-200/50"
-                                                        )}
+                                                        className="w-full py-2 flex items-center justify-center gap-1.5 text-xs font-medium rounded-lg transition-colors text-gray-500 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-500/10 bg-gray-100/50 dark:bg-base-200/50"
                                                     >
-                                                        <Plus className={cn("w-3.5 h-3.5 transition-transform", addingToFamilyId === family.id && "rotate-45")} />
-                                                        {addingToFamilyId === family.id ? 'Close' : 'Add Member'}
+                                                        <Plus className="w-3.5 h-3.5" />
+                                                        Add Member
                                                     </button>
                                                 </div>
                                             </div>
@@ -479,6 +437,106 @@ function Families() {
                     </div>
                 )}
             </div>
+
+            {/* Add Member Modal */}
+            {addingToFamilyId && (() => {
+                const targetFamily = families.find(f => f.id === addingToFamilyId);
+                if (!targetFamily) return null;
+                return (
+                    <div
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+                        onClick={() => { setAddingToFamilyId(null); setAssignSearch(''); }}
+                    >
+                        <div
+                            className="bg-white dark:bg-base-100 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-200 dark:border-base-300 animate-in zoom-in-95 duration-200 flex flex-col max-h-[80vh]"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {/* Modal Header */}
+                            <div className="px-6 py-5 border-b border-gray-100 dark:border-base-200 flex items-center justify-between shrink-0">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: targetFamily.color }} />
+                                    <div className="min-w-0">
+                                        <h2 className="text-lg font-bold text-gray-900 dark:text-base-content truncate">Add Members</h2>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">to {targetFamily.name}</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => { setAddingToFamilyId(null); setAssignSearch(''); }}
+                                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-base-200 rounded-xl transition-colors shrink-0"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {/* Search Input */}
+                            <div className="px-6 py-4 border-b border-gray-100 dark:border-base-200 shrink-0">
+                                <div className="relative">
+                                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={assignSearch}
+                                        onChange={(e) => setAssignSearch(e.target.value)}
+                                        placeholder="Search by email..."
+                                        className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl bg-gray-50 dark:bg-base-200 border border-gray-200 dark:border-base-300 text-gray-900 dark:text-base-content focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all"
+                                        autoFocus
+                                    />
+                                </div>
+                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                                    {filteredAvailable.length} account{filteredAvailable.length !== 1 ? 's' : ''} available to add
+                                </p>
+                            </div>
+
+                            {/* Account List */}
+                            <div className="flex-1 overflow-y-auto min-h-0">
+                                {filteredAvailable.length > 0 ? (
+                                    <div className="p-2">
+                                        {filteredAvailable.map(account => (
+                                            <button
+                                                key={account.id}
+                                                onClick={() => {
+                                                    handleAssign(account.id, addingToFamilyId);
+                                                    setAssignSearch('');
+                                                }}
+                                                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 rounded-xl transition-colors group"
+                                            >
+                                                <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-base-200 flex items-center justify-center shrink-0 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
+                                                    <span className="text-xs font-bold text-gray-500 dark:text-gray-500 group-hover:text-blue-500 transition-colors">
+                                                        {account.email.charAt(0).toUpperCase()}
+                                                    </span>
+                                                </div>
+                                                <span className="flex-1 text-left truncate">{account.email}</span>
+                                                <UserPlus className="w-4 h-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-blue-500" />
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-12 text-center px-6">
+                                        <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-base-200 flex items-center justify-center mb-3">
+                                            <User className="w-6 h-6 text-gray-400" />
+                                        </div>
+                                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                            {assignSearch ? 'No matching accounts' : 'All accounts are already in this family'}
+                                        </p>
+                                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                            {assignSearch ? 'Try a different search term' : 'All accounts are already assigned to families'}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="px-6 py-4 bg-gray-50 dark:bg-base-200/50 border-t border-gray-100 dark:border-base-200 shrink-0">
+                                <button
+                                    onClick={() => { setAddingToFamilyId(null); setAssignSearch(''); }}
+                                    className="w-full py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-base-100 border border-gray-300 dark:border-base-300 rounded-xl hover:bg-gray-50 dark:hover:bg-base-200 transition-colors"
+                                >
+                                    Done
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
         </div>
     );
 }

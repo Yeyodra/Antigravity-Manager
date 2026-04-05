@@ -251,7 +251,7 @@ function Accounts() {
     const familyCounts: Record<string, number> = {};
     for (const family of families) {
       familyCounts[family.id] = searchedAccounts.filter(
-        (a) => a.family_id === family.id,
+        (a) => a.family_ids?.includes(family.id),
       ).length;
     }
     return {
@@ -289,7 +289,7 @@ function Accounts() {
       });
     } else if (filter.startsWith("family:")) {
       const familyId = filter.slice(7);
-      result = result.filter((a) => a.family_id === familyId);
+      result = result.filter((a) => a.family_ids?.includes(familyId));
     }
 
     return result;
@@ -560,7 +560,10 @@ function Accounts() {
         return;
       }
 
-      const exportData = response.accounts;
+      const exportData: Record<string, unknown> = { accounts: response.accounts };
+      if (response.families && response.families.length > 0) {
+        exportData.families = response.families;
+      }
       const content = JSON.stringify(exportData, null, 2);
       const fileName = `antigravity_accounts_${new Date().toISOString().split("T")[0]}.json`;
 
@@ -631,20 +634,42 @@ function Accounts() {
   };
 
   const processImportData = async (content: string) => {
-    let importData: Array<{ email?: string; refresh_token?: string }>;
+    let parsed: unknown;
     try {
-      importData = JSON.parse(content);
+      parsed = JSON.parse(content);
     } catch {
       showToast(t("accounts.import_invalid_format"), "error");
       return;
     }
 
-    if (!Array.isArray(importData) || importData.length === 0) {
+    // Detect format: new { accounts: [...], families: [...] } or old [...]
+    let accountEntries: Array<{ email?: string; refresh_token?: string; family_ids?: string[] }>;
+    let importedFamilies: Array<{ id: string; name: string; color: string; description?: string }> | undefined;
+
+    if (Array.isArray(parsed)) {
+      // Old format: flat array of accounts
+      accountEntries = parsed;
+    } else if (
+      parsed &&
+      typeof parsed === "object" &&
+      "accounts" in (parsed as Record<string, unknown>) &&
+      Array.isArray((parsed as Record<string, unknown>).accounts)
+    ) {
+      // New format with families
+      const obj = parsed as Record<string, unknown>;
+      accountEntries = obj.accounts as typeof accountEntries;
+      importedFamilies = obj.families as typeof importedFamilies;
+    } else {
       showToast(t("accounts.import_invalid_format"), "error");
       return;
     }
 
-    const validEntries = importData.filter(
+    if (accountEntries.length === 0) {
+      showToast(t("accounts.import_invalid_format"), "error");
+      return;
+    }
+
+    const validEntries = accountEntries.filter(
       (item) =>
         item.refresh_token &&
         typeof item.refresh_token === "string" &&
@@ -656,18 +681,73 @@ function Accounts() {
       return;
     }
 
+    // Import families first and build old ID -> new ID mapping
+    const familyIdMap = new Map<string, string>();
+    if (importedFamilies && importedFamilies.length > 0) {
+      const familyStore = useFamilyStore.getState();
+      await familyStore.fetchFamilies();
+      const currentFamilies = useFamilyStore.getState().families;
+
+      for (const impFamily of importedFamilies) {
+        // Match by name (case-insensitive)
+        const existing = currentFamilies.find(
+          (f) => f.name.toLowerCase() === impFamily.name.toLowerCase(),
+        );
+        if (existing) {
+          familyIdMap.set(impFamily.id, existing.id);
+        } else {
+          try {
+            const created = await useFamilyStore.getState().createFamily(
+              impFamily.name,
+              impFamily.color,
+              impFamily.description,
+            );
+            familyIdMap.set(impFamily.id, created.id);
+          } catch (error) {
+            console.error("Failed to create family:", impFamily.name, error);
+          }
+        }
+      }
+    }
+
     let successCount = 0;
     let failCount = 0;
+    const successfulImports: Array<{ email: string; family_ids?: string[] }> = [];
 
     for (const entry of validEntries) {
       try {
         await addAccount(entry.email || "", entry.refresh_token!);
         successCount++;
+        if (entry.family_ids && entry.family_ids.length > 0) {
+          successfulImports.push({ email: entry.email || "", family_ids: entry.family_ids });
+        }
       } catch (error) {
         console.error("Import account failed:", error);
         failCount++;
       }
       await new Promise((r) => setTimeout(r, 100));
+    }
+
+    // Assign families to imported accounts by matching on email
+    if (successfulImports.length > 0 && familyIdMap.size > 0) {
+      await fetchAccounts();
+      const currentAccounts = useAccountStore.getState().accounts;
+      for (const imp of successfulImports) {
+        const acc = currentAccounts.find((a) => a.email === imp.email);
+        if (acc && imp.family_ids) {
+          for (const oldFamilyId of imp.family_ids) {
+            const newFamilyId = familyIdMap.get(oldFamilyId);
+            if (newFamilyId) {
+              try {
+                await useFamilyStore.getState().assignAccountFamily(acc.id, newFamilyId);
+              } catch (error) {
+                console.error("Failed to assign family:", error);
+              }
+            }
+          }
+        }
+      }
+      await useFamilyStore.getState().fetchFamilies();
     }
 
     if (failCount === 0) {

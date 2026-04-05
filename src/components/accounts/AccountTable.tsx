@@ -52,6 +52,8 @@ import { useConfigStore } from '../../stores/useConfigStore';
 import { QuotaItem } from './QuotaItem';
 import { MODEL_CONFIG, sortModels } from '../../config/modelConfig';
 import FamilyBadge from './FamilyBadge';
+import FamilyAssignMenu from './FamilyAssignMenu';
+import { useAccountStore } from '../../stores/useAccountStore';
 import { getValidationBlockedStatusLabel } from './accountValidationStatus';
 
 // ============================================================================
@@ -312,6 +314,7 @@ function AccountRowContent({
 }: AccountRowContentProps) {
     const { t } = useTranslation();
     const { config, showAllQuotas } = useConfigStore();
+    const { fetchAccounts } = useAccountStore();
     const validationBlockedLabel = getValidationBlockedStatusLabel(account.validation_blocked_reason, t);
 
     // 自定义标签编辑状态
@@ -471,7 +474,7 @@ function AccountRowContent({
                             }
                         })()}
                         {/* Family badge */}
-                        <FamilyBadge familyId={account.family_id} />
+                        <FamilyBadge familyIds={account.family_ids} />
                         {/* 自定义标签 */}
                         {account.custom_label && !isEditingLabel && (
                             <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 text-[10px] font-bold shadow-sm border border-orange-200/50 dark:border-orange-800/50">
@@ -601,6 +604,12 @@ function AccountRowContent({
                     >
                         <Fingerprint className="w-3.5 h-3.5" />
                     </button>
+                    {/* Family assign menu */}
+                    <FamilyAssignMenu
+                        accountId={account.id}
+                        currentFamilyIds={account.family_ids}
+                        onAssigned={() => fetchAccounts()}
+                    />
                     {/* 自定义标签按钮 */}
                     {onUpdateLabel && (
                         <button

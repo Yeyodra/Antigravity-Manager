@@ -211,7 +211,7 @@ pub fn list_families() -> Result<Vec<Family>, String> {
     Ok(index.families)
 }
 
-/// Assign an account to a family (or unassign by passing None)
+/// Assign an account to a family (add to list) or unassign (remove from list)
 pub fn assign_account_to_family(account_id: &str, family_id: Option<String>) -> Result<(), String> {
     // Validate family exists if assigning
     if let Some(ref fid) = family_id {
@@ -222,13 +222,42 @@ pub fn assign_account_to_family(account_id: &str, family_id: Option<String>) -> 
     }
 
     let mut account = crate::modules::account::load_account(account_id)?;
-    account.family_id = family_id.clone();
+
+    match family_id {
+        Some(fid) => {
+            // Add to family_ids if not already present
+            if !account.family_ids.contains(&fid) {
+                account.family_ids.push(fid.clone());
+            }
+            crate::modules::account::save_account(&account)?;
+            crate::modules::logger::log_info(&format!(
+                "Account {} added to family: {}",
+                account_id, fid
+            ));
+        }
+        None => {
+            // Unassign all families
+            account.family_ids.clear();
+            crate::modules::account::save_account(&account)?;
+            crate::modules::logger::log_info(&format!(
+                "Account {} unassigned from all families",
+                account_id
+            ));
+        }
+    }
+
+    Ok(())
+}
+
+/// Remove an account from a specific family
+pub fn unassign_account_from_family(account_id: &str, family_id: &str) -> Result<(), String> {
+    let mut account = crate::modules::account::load_account(account_id)?;
+    account.family_ids.retain(|id| id != family_id);
     crate::modules::account::save_account(&account)?;
 
-    let action = family_id.as_deref().unwrap_or("ungrouped");
     crate::modules::logger::log_info(&format!(
-        "Account {} assigned to family: {}",
-        account_id, action
+        "Account {} removed from family: {}",
+        account_id, family_id
     ));
     Ok(())
 }
@@ -266,9 +295,9 @@ pub fn batch_assign_accounts(
 fn unassign_accounts_from_family(family_id: &str) -> Result<(), String> {
     let accounts = crate::modules::account::list_accounts()?;
     for account in accounts {
-        if account.family_id.as_deref() == Some(family_id) {
+        if account.family_ids.contains(&family_id.to_string()) {
             let mut acc = account;
-            acc.family_id = None;
+            acc.family_ids.retain(|id| id != family_id);
             if let Err(e) = crate::modules::account::save_account(&acc) {
                 crate::modules::logger::log_warn(&format!(
                     "Failed to unassign account {} from deleted family: {}",

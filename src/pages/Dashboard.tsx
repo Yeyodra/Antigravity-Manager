@@ -141,7 +141,10 @@ function Dashboard() {
                 return;
             }
 
-            const exportData = response.accounts;
+            const exportData: Record<string, unknown> = { accounts: response.accounts };
+            if (response.families && response.families.length > 0) {
+                exportData.families = response.families;
+            }
             const content = JSON.stringify(exportData, null, 2);
             const fileName = `antigravity_accounts_${new Date().toISOString().split('T')[0]}.json`;
 

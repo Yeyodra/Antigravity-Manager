@@ -169,6 +169,7 @@ const COMMAND_MAPPING: Record<string, { url: string; method: 'GET' | 'POST' | 'D
   'update_family': { url: '/api/families/:id', method: 'PATCH' },
   'delete_family': { url: '/api/families/:id', method: 'DELETE' },
   'assign_account_family': { url: '/api/families/assign', method: 'POST' },
+  'unassign_account_family': { url: '/api/families/unassign', method: 'POST' },
   'batch_assign_account_family': { url: '/api/families/batch-assign', method: 'POST' },
 };
 

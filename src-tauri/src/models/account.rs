@@ -1,6 +1,29 @@
 use super::{quota::QuotaData, token::TokenData};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashSet;
+
+/// Backward-compatible deserializer: reads old `family_id: "xxx"` as `["xxx"]`,
+/// or new `family_ids: ["a","b"]` as-is.
+fn deserialize_family_ids<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    use serde::de;
+
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum FamilyField {
+        Single(Option<String>),
+        Multiple(Vec<String>),
+    }
+
+    match FamilyField::deserialize(deserializer) {
+        Ok(FamilyField::Multiple(ids)) => Ok(ids),
+        Ok(FamilyField::Single(Some(id))) if !id.is_empty() => Ok(vec![id]),
+        Ok(FamilyField::Single(_)) => Ok(Vec::new()),
+        Err(_) => Ok(Vec::new()),
+    }
+}
 
 /// 账号数据结构
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -60,9 +83,15 @@ pub struct Account {
     /// 用户自定义标签
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub custom_label: Option<String>,
-    /// Family group assignment
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub family_id: Option<String>,
+    /// Family group assignments (multiple families supported)
+    /// Backward compat: deserializes old `family_id: "xxx"` into `family_ids: ["xxx"]`
+    #[serde(
+        default,
+        skip_serializing_if = "Vec::is_empty",
+        deserialize_with = "deserialize_family_ids",
+        alias = "family_id"
+    )]
+    pub family_ids: Vec<String>,
 }
 
 impl Account {
@@ -92,7 +121,7 @@ impl Account {
             proxy_id: None,
             proxy_bound_at: None,
             custom_label: None,
-            family_id: None,
+            family_ids: Vec::new(),
         }
     }
 
@@ -171,10 +200,16 @@ pub struct DeviceProfileVersion {
 pub struct AccountExportItem {
     pub email: String,
     pub refresh_token: String,
+    /// Family group IDs this account belongs to
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub family_ids: Vec<String>,
 }
 
 /// 导出账号响应
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccountExportResponse {
     pub accounts: Vec<AccountExportItem>,
+    /// Family definitions referenced by exported accounts
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub families: Vec<super::family::Family>,
 }

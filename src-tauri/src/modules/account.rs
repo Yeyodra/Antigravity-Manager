@@ -1559,23 +1559,45 @@ pub fn mark_account_forbidden(account_id: &str, reason: &str) -> Result<(), Stri
     Ok(())
 }
 
-/// Export accounts by IDs (for backup/migration)
+/// Export accounts by IDs (for backup/migration), including family data
 pub fn export_accounts_by_ids(account_ids: &[String]) -> Result<crate::models::AccountExportResponse, String> {
     use crate::models::{AccountExportItem, AccountExportResponse};
+    use std::collections::HashSet;
     
     let accounts = list_accounts()?;
+    
+    // Collect all referenced family IDs
+    let mut referenced_family_ids = HashSet::new();
     
     let export_items: Vec<AccountExportItem> = accounts
         .into_iter()
         .filter(|acc| account_ids.contains(&acc.id))
-        .map(|acc| AccountExportItem {
-            email: acc.email,
-            refresh_token: acc.token.refresh_token,
+        .map(|acc| {
+            for fid in &acc.family_ids {
+                referenced_family_ids.insert(fid.clone());
+            }
+            AccountExportItem {
+                email: acc.email,
+                refresh_token: acc.token.refresh_token,
+                family_ids: acc.family_ids,
+            }
         })
         .collect();
 
+    // Load family definitions for referenced families
+    let families = if referenced_family_ids.is_empty() {
+        Vec::new()
+    } else {
+        crate::modules::family::list_families()
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|f| referenced_family_ids.contains(&f.id))
+            .collect()
+    };
+
     Ok(AccountExportResponse {
         accounts: export_items,
+        families,
     })
 }
 

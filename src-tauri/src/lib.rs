@@ -591,6 +591,7 @@ pub fn run() {
             commands::family::update_family,
             commands::family::delete_family,
             commands::family::assign_account_family,
+            commands::family::unassign_account_family,
             commands::family::batch_assign_account_family,
         ])
         .build(tauri::generate_context!())
